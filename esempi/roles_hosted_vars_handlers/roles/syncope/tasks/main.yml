@@ -1,0 +1,9 @@
+- name: install apache and php packages
+  package: #https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html
+    name:
+      - "{{ apache_pkg }}"
+      - "{{ php_pkg }}"
+    state: latest
+  notify:
+    - restart apache2
+

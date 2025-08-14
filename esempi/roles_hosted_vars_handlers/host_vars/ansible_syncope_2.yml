@@ -1,0 +1,5 @@
+apache_pkg: apache2
+php_pkg: libapache2-mod-php
+ssh_users: "fabio pippo"
+ssh_templates_file: sshd_config_debian.j2
+

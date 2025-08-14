@@ -1,0 +1,5 @@
+apache_pkg: httpd
+php_pkg: php
+ssh_users: "franco pippo"
+ssh_templates_file: sshd_config_centos.j2
+

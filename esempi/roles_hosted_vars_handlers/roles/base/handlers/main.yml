@@ -1,0 +1,13 @@
+- name: restart sshd
+  async: 1
+  poll: 0
+  service:
+    name: ssh
+    state: restarted
+
+- name: wait a few seconds
+  pause:
+    seconds: 5
+
+- name: reset connection
+  meta: reset_connection

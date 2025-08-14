@@ -1,0 +1,105 @@
+services:
+  rp:
+    privileged: true
+    build:
+      context: .
+      dockerfile: slim.dockerfile
+    restart: always
+    networks:
+      - backend-bridge
+      - frontend-bridge
+
+  syncope:
+    privileged: true
+    build:
+      context: .
+      dockerfile: slim.dockerfile
+    restart: always
+    networks:
+      - backend-bridge
+      - frontend-bridge
+    deploy:
+      mode: replicated
+      replicas: 2
+    depends_on:
+      db:
+        condition: service_healthy
+
+  elk:
+    privileged: true
+    build:
+      context: .
+      dockerfile: slim.dockerfile
+    restart: always
+    networks:
+      - backend-bridge
+    deploy:
+      mode: replicated
+      replicas: 2
+    depends_on:
+      - syncope
+
+  db:
+    privileged: true
+    image: postgres:17
+    restart: always
+    networks:
+      - backend-bridge
+    environment:
+      POSTGRES_DB: "syncope"
+      POSTGRES_USER: "syncope"
+      POSTGRES_PASSWORD: "syncope"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  test:
+    privileged: true
+    build:
+      context: .
+      dockerfile: centos.dockerfile
+    restart: always
+    networks:
+      - backend-bridge
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  ansible:
+    privileged: true
+    build:
+      context: .
+      dockerfile: ansible.dockerfile
+    container_name: ansible
+    restart: always
+    networks:
+      - backend-bridge
+      - frontend-bridge
+    command: tail -F /dev/null
+    depends_on:
+      - syncope
+      - elk
+      - db
+      - test
+      - rp
+    volumes:
+      - ./iam:/iam
+      - ./esempi:/esempi
+
+networks:
+  backend-bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "191.165.1.0/24"
+          gateway: "191.165.1.1"
+
+  frontend-bridge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "192.165.1.0/24"
+          gateway: "192.165.1.1"
+

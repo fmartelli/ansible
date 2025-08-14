@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+  become: true
+  roles:
+    - base
+
+- hosts: syncope
+  become: true
+  roles:
+    - syncope
+
+- hosts: elk
+  become: true
+  roles:
+    - elastic
+

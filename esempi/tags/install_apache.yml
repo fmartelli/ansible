@@ -1,0 +1,63 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update Debian
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Debian"
+
+  - name: update CentOS
+    tags: always
+    dnf:
+      update_only: true
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+- hosts: syncope,test
+  become: true
+  tasks:
+
+  - name: install apache and php packages
+    tags: apache,httpd
+    package: #https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_module.html
+      name: 
+        - "{{ apache_pkg }}"
+        - "{{ php_pkg }}"
+      state: latest
+
+  - name: copy default index into httpd server
+    tags: apache,httpd
+    copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
+    notify:
+      - restart apache2
+    register: apache2
+
+  # Senza handlers può essere una operazione come le altre. Con handlers viene eseguito solo se la notify occorre
+  # Un'alternativa è utilizzare "when: apache2.changed" ma senza handlers
+  handlers:
+    - name: restart apache2
+      service:
+        name: apache2
+        state: restarted
+        enabled: yes
+      when: ansible_distribution == "Debian"
+
+- hosts: workstations
+  become: true
+  tasks:
+
+  - name: install curl
+    tags: always
+    apt:
+      name: curl
+

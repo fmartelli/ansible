@@ -1,0 +1,27 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: update Debian
+    apt:
+      upgrade: dist
+      update_cache: yes
+    when: ansible_distribution == "Debian"
+
+  - name: update CentOS
+    dnf:
+      update_only: true
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: create group fabio
+    group:
+      name: fabio
+
+  - name: create user fabio
+    user:
+      name: fabio
+      groups: fabio
+

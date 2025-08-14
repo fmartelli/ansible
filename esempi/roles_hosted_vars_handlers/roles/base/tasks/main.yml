@@ -1,0 +1,24 @@
+- name: update Debian
+  apt:
+    upgrade: dist
+    update_cache: yes
+  when: ansible_distribution == "Debian"
+
+- name: update CentOS
+  dnf:
+    update_only: true
+    update_cache: yes
+  when: ansible_distribution == "CentOS"
+
+- name: generate sshd config file
+  tags: ssh
+  template:
+    src: "{{ ssh_templates_file }}"
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+  notify: 
+    - restart sshd
+    - wait a few seconds
+    - reset connection

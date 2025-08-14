@@ -1,0 +1,39 @@
+docker-compose up -d
+docker-compose down --remove-orphans
+
+ssh-keygen -P "" -C "Ansible KEY" -f /root/.ssh/ansible_id_rsa
+sshpass -p password ssh-copy-id -o "StrictHostKeyChecking accept-new" -i /root/.ssh/ansible_id_rsa.pub ansible@...
+
+ansible all --key-file ~/.ssh/ansible_id_rsa -i inventory.ini -m ping
+se ho ansible.cfg
+
+---
+
+ansible all -m ping
+ansible all --list-hosts
+ansible all -m gather_facts
+
+# sudo apt update (https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html)
+ansible all  -m apt -a update_cache=true --become --ask-become-pass 
+#sudo apt install vim
+ansible all  -m apt -a name=vim --become --ask-become-pass 
+
+# aggiorno vim solo sui nodi syncope
+ansible syncope -m apt -a "name=vim state=latest" --become --ask-become-pass
+
+# sudo apt -y -u dist-upgrade
+ansible all -m apt -a "upgrade=dist" --become --ask-become-pass
+
+# esegue un playbook
+ansible-playbook --ask-become-pass install_apache.yml
+
+# cercare la distribuzione dell'host
+ansible syncope -m gather_facts --limit ansible_syncope_1 | grep ansible_distribution
+
+# list dei tags del playbook
+ansible-playbook --list-tags install_apache_tags.yml
+
+# esegui con tag
+ansible-playbook --ask-become-pass install_apache_tags.yml -i inventory_plus.ini --tags "apache2,httpd"
+
+

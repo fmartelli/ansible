@@ -1,0 +1,2 @@
+ssh_users: "fabio pippo"
+ssh_templates_file: sshd_config_debian.j2
