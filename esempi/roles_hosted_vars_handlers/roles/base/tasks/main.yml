@@ -10,6 +10,11 @@
     update_cache: yes
   when: ansible_distribution == "CentOS"
 
+- name: Print the gateway for each host when defined
+  debug:
+    msg: System {{ inventory_hostname }} has gateway {{ ansible_default_ipv4.gateway }}
+  when: ansible_default_ipv4.gateway is defined
+
 - name: generate sshd config file
   tags: ssh
   template:
@@ -22,3 +27,14 @@
     - restart sshd
     - wait a few seconds
     - reset connection
+  register: result
+
+- name: Print return information from the previous task
+  debug:
+    var: result
+    verbosity: 2
+
+- name: Display all variables/facts known for a host
+  debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
